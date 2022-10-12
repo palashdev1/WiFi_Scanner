@@ -24,7 +24,6 @@
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:padding="10dp"
-        android:inputType="textPassword"
         android:id="@+id/edt_password"
         android:background="@drawable/edit_text_border"
         android:hint="enter password"

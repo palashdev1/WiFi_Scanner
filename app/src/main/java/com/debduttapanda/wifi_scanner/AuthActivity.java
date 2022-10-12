@@ -7,6 +7,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -22,7 +23,7 @@ public class AuthActivity extends AppCompatActivity {
     TextView ssid;
     String getSSID;
     EditText password;
-    String ssid_password;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,46 +43,23 @@ public class AuthActivity extends AppCompatActivity {
         }
 
         ssid.setText(getSSID);
-        //ssid_password.getText(ssid_password);
+
+        //getSSID
+        //password.getText().toString()
     }
 
     public void connectBtn(View view) {
-        WifiConfiguration conf = new WifiConfiguration();
-        conf.SSID = "\"" + getSSID + "\"";
-        conf.wepKeys[0] = "\"" + password.getText() + "\"";
-        conf.wepTxKeyIndex = 0;
-        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-        conf.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+        WifiConfiguration wifiConfig = new WifiConfiguration();
+        wifiConfig.SSID = String.format("\"%s\"", getSSID);
+        wifiConfig.preSharedKey = String.format("\"%s\"", password.getText().toString());
 
-        conf.preSharedKey = "\"" + password.getText() + "\"";
-        conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+        @SuppressLint("WifiManagerLeak") WifiManager wifiManager = (WifiManager)getSystemService(WIFI_SERVICE);
+//remember id
+        int netId = wifiManager.addNetwork(wifiConfig);
+        wifiManager.disconnect();
+        wifiManager.enableNetwork(netId, true);
+        wifiManager.reconnect();
+        Log.d("MyLogs",""+netId);
+    }/////////////////////////////////////////
 
-        Log.d("MyTag", String.valueOf(conf));
-
-        @SuppressLint("WifiManagerLeak") WifiManager wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-        wifiManager.addNetwork(conf);
-        Log.d("MyTag", String.valueOf(conf.allowedAuthAlgorithms));
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-        for( WifiConfiguration i : list ) {
-            Log.d("MyTag", list.toString());
-            if(i.SSID != null && i.SSID.equals("\"" + getSSID + "\"")) {
-                wifiManager.disconnect();
-                wifiManager.enableNetwork(i.networkId, true);
-                wifiManager.reconnect();
-
-                break;
-            }
-        }
-    }
 }
